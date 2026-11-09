@@ -1,28 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 175" role="img" aria-labelledby="title desc">
-  <title id="title">HAD crest</title>
-  <desc id="desc">Heavenly Athletics Department shield crest with HAD lettering and a gold star.</desc>
-  <defs>
-    <linearGradient id="shieldFill" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#758087"/>
-      <stop offset="1" stop-color="#343e45"/>
-    </linearGradient>
-    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffe900"/>
-      <stop offset="1" stop-color="#ffc900"/>
-    </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
-    </filter>
-  </defs>
-  <!-- Bold gold-and-charcoal HAD shield, based on the submitted crest. -->
-  <path d="M43 8h94l17 15h25l18 19h-25l-13-13H62L40 52v66l19 17h92l14-13V73h22v58l-26 24H50l-29-25V46z" fill="#101820" stroke="#05090d" stroke-width="5" stroke-linejoin="round" filter="url(#shadow)"/>
-  <path d="M46 11h89l17 15h26l14 14h-17l-13-13H61L37 51v65l21 20h92l17-15V74h15v55l-23 21H51l-26-23V47z" fill="url(#gold)" stroke="#ffeb00" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M52 32h102l12 12v82l-17 15H61l-19-17V53z" fill="url(#shieldFill)" stroke="#111820" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M37 110c-8 7-9 16-2 22l20 7-6-13 9-12z" fill="url(#gold)" stroke="#111820" stroke-width="3" stroke-linejoin="round"/>
-  <!-- Heavy italic lettering keeps the compact crest legible at header size. -->
-  <g transform="skewX(-13)" filter="url(#shadow)">
-    <text x="33" y="103" font-family="Arial Black, Impact, sans-serif" font-size="49" font-style="italic" font-weight="900" letter-spacing="-5" fill="#fff" stroke="#071018" stroke-width="7" stroke-linejoin="round" paint-order="stroke">HAD</text>
-    <text x="33" y="103" font-family="Arial Black, Impact, sans-serif" font-size="49" font-style="italic" font-weight="900" letter-spacing="-5" fill="#fff">HAD</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 512" role="img" aria-labelledby="title desc">
+  <title id="title">HAD</title>
+  <desc id="desc">White outlined HAD wordmark.</desc>
+  <rect width="2048" height="512" fill="none"/>
+  <g fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round" font-family="Arial Black, Impact, sans-serif" font-style="italic" font-weight="900" letter-spacing="-30">
+    <text x="28" y="410" font-size="390" textLength="1975" lengthAdjust="spacingAndGlyphs">HAD</text>
   </g>
-  <path d="m112 120 4 10 11 1-8 7 3 11-10-6-9 6 3-11-8-7 11-1z" fill="#ffdf00" stroke="#111820" stroke-width="2" stroke-linejoin="round"/>
 </svg>
