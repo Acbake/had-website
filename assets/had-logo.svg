@@ -1,9 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title desc">
-  <title id="title">HAD Heavenly Athletics Department crest</title>
-  <desc id="desc">A bright gold shield, white HAD lettering, and a centered star on a transparent background.</desc>
-  <path d="M155 30h320l42 48h54l43 49h-96l-28-30H192l-65 67v243l59 60h274l49-43v-80l48-42v143l-69 61H164l-73-73V147z" fill="#ffdf00" stroke="#101820" stroke-width="12" stroke-linejoin="round"/>
-  <path d="M173 71h276l46 49-104 107H190v169l63 64h191l53-45v-61" fill="none" stroke="#101820" stroke-width="13" stroke-linejoin="round"/>
-  <path d="M36 327c61-61 126-75 192-65-57 17-92 44-119 77-29 36-26 65 23 84-87-5-143-36-96-96zm568-54c-48 54-91 74-148 76 48-21 75-44 97-76 21-31 16-56-26-74 80 10 119 35 77 74z" fill="#ffdf00" stroke="#101820" stroke-width="9" stroke-linejoin="round"/>
-  <path d="M153 190h61l-30 52h53l42-52h66l-90 138h-65l37-56h-55l-33 56h-64zm216 0h64l25 138h-63l-3-24h-55l-17 24h-67zm17 75h25l-5-37zm103-75h98c49 0 57 29 32 65l-53 78h-69l54-79h-28l-53 79h-68l87-138z" fill="#fff" stroke="#101820" stroke-width="9" stroke-linejoin="round"/>
-  <path d="m321 367 14 42 46 8-46 12-14 43-12-43-46-12 46-8z" fill="#ffdf00" stroke="#101820" stroke-width="6" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 175" role="img" aria-labelledby="title desc">
+  <title id="title">HAD crest</title>
+  <desc id="desc">Heavenly Athletics Department shield crest with HAD lettering and a gold star.</desc>
+  <defs>
+    <linearGradient id="shieldFill" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#758087"/>
+      <stop offset="1" stop-color="#343e45"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe900"/>
+      <stop offset="1" stop-color="#ffc900"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#000" flood-opacity=".35"/>
+    </filter>
+  </defs>
+  <!-- Bold gold-and-charcoal HAD shield, based on the submitted crest. -->
+  <path d="M43 8h94l17 15h25l18 19h-25l-13-13H62L40 52v66l19 17h92l14-13V73h22v58l-26 24H50l-29-25V46z" fill="#101820" stroke="#05090d" stroke-width="5" stroke-linejoin="round" filter="url(#shadow)"/>
+  <path d="M46 11h89l17 15h26l14 14h-17l-13-13H61L37 51v65l21 20h92l17-15V74h15v55l-23 21H51l-26-23V47z" fill="url(#gold)" stroke="#ffeb00" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M52 32h102l12 12v82l-17 15H61l-19-17V53z" fill="url(#shieldFill)" stroke="#111820" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M37 110c-8 7-9 16-2 22l20 7-6-13 9-12z" fill="url(#gold)" stroke="#111820" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Heavy italic lettering keeps the compact crest legible at header size. -->
+  <g transform="skewX(-13)" filter="url(#shadow)">
+    <text x="33" y="103" font-family="Arial Black, Impact, sans-serif" font-size="49" font-style="italic" font-weight="900" letter-spacing="-5" fill="#fff" stroke="#071018" stroke-width="7" stroke-linejoin="round" paint-order="stroke">HAD</text>
+    <text x="33" y="103" font-family="Arial Black, Impact, sans-serif" font-size="49" font-style="italic" font-weight="900" letter-spacing="-5" fill="#fff">HAD</text>
+  </g>
+  <path d="m112 120 4 10 11 1-8 7 3 11-10-6-9 6 3-11-8-7 11-1z" fill="#ffdf00" stroke="#111820" stroke-width="2" stroke-linejoin="round"/>
 </svg>
