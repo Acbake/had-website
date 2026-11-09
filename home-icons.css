@@ -1,0 +1,15 @@
+/* Replace the section numbers with custom league-themed emoji badges. */
+.home-section-icon {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif !important;
+  font-size: 21px !important;
+  line-height: 1;
+  box-shadow: 0 0 0 4px rgba(217, 166, 74, .14), 0 5px 14px rgba(16, 36, 55, .14);
+  background: linear-gradient(145deg, #19354b, #102437) !important;
+}
+.home-section-card:hover .home-section-icon {
+  transform: rotate(-7deg) scale(1.08);
+  transition: transform .2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-section-card:hover .home-section-icon { transition: none; }
+}
