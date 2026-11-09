@@ -31,20 +31,20 @@
     if (link.getAttribute('href') === '#stats') link.textContent = 'Awards';
   });
 
-  const site = document.createElement('script');
-  site.src = 'site-enhancements.js?v=award-leaders';
-  site.onload = () => {
-    const awards = document.createElement('script');
-    awards.src = 'awards.js?v=season2-awards';
-    awards.onerror = () => {
+  function loadScript(src, onload) {
+    const script = document.createElement('script');
+    script.src = src;
+    if (onload) script.onload = onload;
+    script.onerror = () => {
       const grid = document.getElementById('award-grid');
-      if (grid) grid.textContent = 'Award leaders could not load. Please refresh the page.';
+      if (grid) grid.textContent = 'A site feature could not load. Please refresh the page.';
     };
-    document.body.append(awards);
-  };
-  site.onerror = () => {
-    const grid = document.getElementById('award-grid');
-    if (grid) grid.textContent = 'The site app could not load. Please refresh the page.';
-  };
-  document.body.append(site);
+    document.body.append(script);
+  }
+
+  loadScript('site-enhancements.js?v=award-leaders', () => {
+    loadScript('seasonal-effects.js?v=scroll-themes', () => {
+      loadScript('awards.js?v=season2-awards');
+    });
+  });
 })();
