@@ -1,44 +1,347 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101225">
-  <meta name="description" content="Heavenly Athletics Department — scores, stats, teams, and league updates.">
-  <title>HAD — Heavenly Athletics Department</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="announcement-bar"><span class="live-dot"></span> THE HOME OF HEAVENLY ATHLETICS <span class="bar-season" id="bar-season">HFL · SEASON 2</span></div>
-  <header class="site-header">
-    <a class="brand" href="#home" aria-label="HAD home"><span class="brand-mark">H<span>A</span>D</span><span class="brand-name">HEAVENLY<br>ATHLETICS DEPT.</span></a>
-    <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
-    <nav id="main-nav"><a href="#stats">Stats</a><a href="#teams">Teams</a><a href="#bulletin">Bulletin</a><a href="#bracket">Playoffs</a><a href="#updates">Updates</a><button class="operator-button" id="operator-toggle">Operator tools</button></nav>
-  </header>
-  <main id="home">
-    <section class="hero">
-      <div class="hero-copy"><p class="eyebrow"><span class="eyebrow-line"></span> BUILT FOR THE LEAGUE</p><h1>THE GAME<br>IS <span>HEAVENLY.</span></h1><p class="hero-intro">Your home for the Heavenly Football League. Follow the numbers, meet the teams, and stay in the loop all season long.</p><div class="hero-actions"><a class="button button-primary" href="#stats">Explore the stats <span>↘</span></a><a class="button button-quiet" href="#teams">Meet the teams <span>→</span></a></div></div>
-      <div class="hero-art" aria-label="HAD season graphic"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-ball">H<span>✦</span>FL</div><div class="hero-season"><span>NOW PLAYING</span><strong id="hero-season">SEASON 2</strong><small>HEAVENLY FOOTBALL LEAGUE</small></div><div class="hero-caption">EST. FOR THE LOVE OF THE GAME <span>✦</span></div></div>
-      <div class="hero-bottom"><span>01 — LEAGUE CENTRAL</span><span>SCROLL TO EXPLORE ↓</span></div>
-    </section>
-    <section class="stats-section section-pad" id="stats">
-      <div class="section-heading"><div><p class="eyebrow">LIVE FROM THE LEAGUE</p><h2>The stats <span>sheet.</span></h2></div><div class="sheet-status"><span class="status-dot" id="status-dot"></span><span id="sheet-status">Connecting to Google Sheets…</span><button class="text-button" id="refresh-stats">Refresh ↻</button></div></div>
-      <div class="stats-layout"><div class="stats-table-wrap"><div class="table-topline"><strong>HFL LIVE DATA</strong><span>SYNCED AUTOMATICALLY</span></div><div id="stats-table" class="stats-table"><div class="loading-state"><span class="spinner"></span> Loading the latest stats…</div></div><p class="table-footnote">Stats refresh automatically every minute. The source spreadsheet is embedded alongside the live data.</p></div>
-      <div class="sheet-card"><div class="sheet-card-head"><div><span class="sheet-icon">▤</span><p class="eyebrow">THE SOURCE OF TRUTH</p></div><span class="external-mark">↗</span></div><h3>League spreadsheet</h3><p>Open the original Google Sheet or work directly in the embedded spreadsheet below.</p><a class="button button-outline" href="https://docs.google.com/spreadsheets/d/157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho/edit?gid=1938901917#gid=1938901917" target="_blank" rel="noopener">Open in Google Sheets ↗</a><p class="sheet-help">For live viewing here, the spreadsheet must be shared with “Anyone with the link” as a viewer.</p></div></div>
-      <details class="embedded-sheet"><summary><span>View the spreadsheet on HAD</span><span>＋</span></summary><div class="iframe-wrap"><iframe title="HAD Google spreadsheet" src="https://docs.google.com/spreadsheets/d/157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho/edit?gid=1938901917#gid=1938901917" loading="lazy" allowfullscreen></iframe></div></details>
-    </section>
-    <section class="teams-section section-pad" id="teams"><div class="section-heading"><div><p class="eyebrow">32 CITIES. ONE LEAGUE.</p><h2>Meet your <span>teams.</span></h2></div><p class="section-aside">Two divisions. One shot at glory.<br>Find your side.</p></div><div class="division-grid"><article class="division-card crown"><div class="division-title"><span class="division-symbol">♛</span><div><p class="eyebrow">HEAVENLY FOOTBALL LEAGUE</p><h3>Crown Division</h3></div><span class="team-count">08 TEAMS</span></div><ul class="team-list"><li><span class="team-number">01</span>Kansas City Firebirds<span class="team-arrow">↗</span></li><li><span class="team-number">02</span>Pittsburgh Bullets<span class="team-arrow">↗</span></li><li><span class="team-number">03</span>San Francisco Reapers<span class="team-arrow">↗</span></li><li><span class="team-number">04</span>Boston Knights<span class="team-arrow">↗</span></li><li><span class="team-number">05</span>Cleveland Pirates<span class="team-arrow">↗</span></li><li><span class="team-number">06</span>Oklahoma City Monarchs<span class="team-arrow">↗</span></li><li><span class="team-number">07</span>New Orleans Dragons<span class="team-arrow">↗</span></li><li><span class="team-number">08</span>Tampa Bay Ravens<span class="team-arrow">↗</span></li></ul></article>
-      <article class="division-card ascended"><div class="division-title"><span class="division-symbol">✦</span><div><p class="eyebrow">HEAVENLY FOOTBALL LEAGUE</p><h3>Ascended Division</h3></div><span class="team-count">08 TEAMS</span></div><ul class="team-list"><li><span class="team-number">01</span>Denver Lightning<span class="team-arrow">↗</span></li><li><span class="team-number">02</span>Las Vegas Bulls<span class="team-arrow">↗</span></li><li><span class="team-number">03</span>Portland Huskies<span class="team-arrow">↗</span></li><li><span class="team-number">04</span>Salt Lake City Bugles<span class="team-arrow">↗</span></li><li><span class="team-number">05</span>Seattle Mustangs<span class="team-arrow">↗</span></li><li><span class="team-number">06</span>Minnesota Tarpedos<span class="team-arrow">↗</span></li><li><span class="team-number">07</span>San Antonio Aztecs<span class="team-arrow">↗</span></li><li><span class="team-number">08</span>Phoenix Dolphins<span class="team-arrow">↗</span></li></ul></article></div></section>
-    <section class="bulletin-section section-pad" id="bulletin"><div class="section-heading"><div><p class="eyebrow">THE LATEST FROM HFL</p><h2>League <span>bulletin.</span></h2></div><span class="bulletin-label"><span class="live-dot"></span> LATEST NEWS</span></div><div class="bulletin-grid" id="bulletin-list"></div></section>
-    <section class="playoff-section section-pad" id="bracket"><div class="section-heading"><div><p class="eyebrow">THE ROAD TO THE TITLE</p><h2>Pre-playoff <span>bracket.</span></h2></div><span class="coming-pill">BRACKET PREVIEW</span></div><div class="bracket-wrap"><div class="bracket-round"><p class="round-label">CROWN · SEMIFINALS</p><div class="match-card"><div><span class="seed">01</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">04</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">02</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">03</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div></div><div class="bracket-round bracket-middle"><p class="round-label">DIVISION FINAL</p><div class="match-card placeholder"><div><span class="seed">✦</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card placeholder"><div><span class="seed">✦</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div></div><div class="championship"><span class="trophy">✦</span><p class="round-label">HEAVENLY BOWL</p><strong>THE<br>CHAMPIONSHIP</strong><span class="champ-team">WINNER TBD</span></div><div class="bracket-round bracket-middle"><p class="round-label">DIVISION FINAL</p><div class="match-card placeholder"><div><span class="seed">✦</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card placeholder"><div><span class="seed">✦</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div></div><div class="bracket-round"><p class="round-label">ASCENDED · SEMIFINALS</p><div class="match-card"><div><span class="seed">01</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">04</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">02</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div><div class="match-card"><div><span class="seed">03</span><span class="match-team">TBD</span></div><span class="match-score">—</span></div></div></div><p class="bracket-note">The playoff bracket will be set when the regular season concludes. Check back for matchups.</p></section>
-    <section class="updates-section section-pad" id="updates"><div class="updates-copy"><p class="eyebrow">WHAT'S NEXT</p><h2>More is<br><span>in the works.</span></h2><p>HAD is always leveling up. Here’s what we’re building next for the league.</p></div><div class="update-list" id="update-list"></div></section>
-    <section class="season-strip"><div class="season-star">✦</div><p class="eyebrow">ONE LEAGUE. EVERY SEASON.</p><h2>Play like it <span>means something.</span></h2><p>Heavenly Football League · Season <span id="season-footer">2</span></p></section>
-  </main>
-  <footer class="site-footer"><a class="brand" href="#home"><span class="brand-mark">H<span>A</span>D</span><span class="brand-name">HEAVENLY<br>ATHLETICS DEPT.</span></a><p>MADE FOR THE LOVE OF THE GAME.</p><a href="#home" class="back-top">BACK TO TOP ↑</a><span class="copyright">© <span id="year"></span> HAD</span></footer>
-  <dialog id="operator-dialog" class="operator-dialog"><form method="dialog"><div class="dialog-head"><div><p class="eyebrow">LOCAL OPERATOR TOOLS</p><h2>Manage the <span>league.</span></h2></div><button class="close-dialog" aria-label="Close">×</button></div><p class="operator-notice">These edits are saved in this browser only. They are not shared with other visitors. For shared admin publishing, connect a secure backend/CMS.</p><label>Season number<input id="season-input" type="number" min="1" value="2"></label><label>Bulletin headlines (one per line)<textarea id="bulletin-input" rows="5"></textarea></label><label>Future updates (one per line)<textarea id="updates-input" rows="5"></textarea></label><div class="dialog-actions"><button type="button" class="button button-outline" id="reset-content">Reset to defaults</button><button type="button" class="button button-primary" id="save-content">Save on this device</button></div></form></dialog>
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HAD — Heavenly Athletics Department</title>
+    <meta
+      name="description"
+      content="The Heavenly Athletics Department league website with live stats, team listings, standings, updates, and operator tools."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="top-strip">
+      <div class="wrap top-strip-inner">
+        <span>HEAVENLY FOOTBALL LEAGUE</span>
+        <span class="top-strip-season">SEASON <span id="season-footer">2</span></span>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a href="#home" class="brand" aria-label="HAD home">
+          <span class="brand-mark">HAD</span>
+          <span class="brand-copy">
+            <strong>HEAVENLY</strong>
+            <small>ATHLETICS DEPT.</small>
+          </span>
+        </a>
+
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+
+        <nav id="main-nav" class="main-nav" aria-label="Main navigation">
+          <a href="#home">Home</a>
+          <a href="#stats">Stats</a>
+          <a href="#standings">Standings</a>
+          <a href="#teams">Teams</a>
+          <a href="#updates">Updates</a>
+          <button class="operator-button" id="operator-toggle" type="button">Operator</button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">OFFICIAL LEAGUE HUB</p>
+            <h1>THE <span>HEAVENLY</span> GAME.</h1>
+            <p class="hero-text">
+              Stay connected to every matchup, split, standings shift, and league update across the
+              Heavenly Football League.
+            </p>
+            <div class="hero-actions">
+              <a href="#stats" class="btn btn-primary">View live stats</a>
+              <a href="#standings" class="btn btn-secondary">See standings</a>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="hero-badge">
+              <span>LIVE</span>
+              <strong id="hero-season">SEASON 2</strong>
+            </div>
+            <div class="hero-panel-card">
+              <p class="mini-label">CURRENT STATE</p>
+              <div class="hero-scoreline">
+                <span>Crown</span>
+                <strong>8 Teams</strong>
+              </div>
+              <div class="hero-scoreline">
+                <span>Ascended</span>
+                <strong>8 Teams</strong>
+              </div>
+              <div class="hero-scoreline">
+                <span>Watch</span>
+                <strong>Playoff push</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-section section" id="stats">
+        <div class="wrap">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow dark">LIVE FROM THE SHEET</p>
+              <h2>League stats.</h2>
+            </div>
+            <div class="sheet-status-wrap">
+              <span class="status-dot" id="status-dot"></span>
+              <span id="sheet-status">Connecting to Google Sheets…</span>
+              <button type="button" class="text-button" id="refresh-stats">Refresh</button>
+            </div>
+          </div>
+
+          <div class="stats-layout">
+            <div class="table-panel">
+              <div class="panel-topline">
+                <span>HFL • LIVE DATA</span>
+                <span>Auto refresh</span>
+              </div>
+              <div id="stats-table" class="stats-table">
+                <div class="loading-state"><span class="spinner"></span> Loading schedule and stats…</div>
+              </div>
+            </div>
+
+            <aside class="sheet-panel">
+              <p class="mini-label">SOURCE</p>
+              <h3>League sheet</h3>
+              <p>
+                Stats update directly from the official Google Sheet used by the league. If a change is made in
+                the sheet, it can refresh on the site after the next sync.
+              </p>
+              <a
+                class="btn btn-secondary btn-block"
+                href="https://docs.google.com/spreadsheets/d/157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho/edit?gid=1938901917#gid=1938901917"
+                target="_blank"
+                rel="noopener"
+                >Open Google Sheet</a
+              >
+              <div class="sheet-embed-link">
+                <details>
+                  <summary>View spreadsheet</summary>
+                  <div class="iframe-wrap">
+                    <iframe
+                      title="HAD Google Sheets embed"
+                      src="https://docs.google.com/spreadsheets/d/157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho/edit?gid=1938901917#gid=1938901917"
+                      loading="lazy"
+                    ></iframe>
+                  </div>
+                </details>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section class="standings-section section alt-bg" id="standings">
+        <div class="wrap">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">LEAGUE TABLE</p>
+              <h2>Standings.</h2>
+            </div>
+            <span class="pill">Season 2</span>
+          </div>
+
+          <div class="standings-grid">
+            <article class="standings-card">
+              <div class="card-header">
+                <span class="card-mark">♛</span>
+                <h3>Crown Division</h3>
+              </div>
+              <ul class="team-list clean-list">
+                <li>Kansas City Firebirds</li>
+                <li>Pittsburgh Bullets</li>
+                <li>San Francisco Reapers</li>
+                <li>Boston Knights</li>
+                <li>Cleveland Pirates</li>
+                <li>Oklahoma City Monarchs</li>
+                <li>New Orleans Dragons</li>
+                <li>Tampa Bay Ravens</li>
+              </ul>
+            </article>
+
+            <article class="standings-card accent-card">
+              <div class="card-header">
+                <span class="card-mark">✦</span>
+                <h3>Ascended Division</h3>
+              </div>
+              <ul class="team-list clean-list">
+                <li>Denver Lightning</li>
+                <li>Las Vegas Bulls</li>
+                <li>Portland Huskies</li>
+                <li>Salt Lake City Bugles</li>
+                <li>Seattle Mustangs</li>
+                <li>Minnesota Tarpedos</li>
+                <li>San Antonio Aztecs</li>
+                <li>Phoenix Dolphins</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="teams-section section" id="teams">
+        <div class="wrap">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow dark">CLUBS</p>
+              <h2>Team directory.</h2>
+            </div>
+          </div>
+
+          <div class="team-grid">
+            <div class="team-card">Kansas City Firebirds</div>
+            <div class="team-card">Pittsburgh Bullets</div>
+            <div class="team-card">San Francisco Reapers</div>
+            <div class="team-card">Boston Knights</div>
+            <div class="team-card">Cleveland Pirates</div>
+            <div class="team-card">Oklahoma City Monarchs</div>
+            <div class="team-card">New Orleans Dragons</div>
+            <div class="team-card">Tampa Bay Ravens</div>
+            <div class="team-card">Denver Lightning</div>
+            <div class="team-card">Las Vegas Bulls</div>
+            <div class="team-card">Portland Huskies</div>
+            <div class="team-card">Salt Lake City Bugles</div>
+            <div class="team-card">Seattle Mustangs</div>
+            <div class="team-card">Minnesota Tarpedos</div>
+            <div class="team-card">San Antonio Aztecs</div>
+            <div class="team-card">Phoenix Dolphins</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bulletin-section section alt-bg" id="bulletin">
+        <div class="wrap">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow">NEWS</p>
+              <h2>League bulletin.</h2>
+            </div>
+            <span class="pill muted">Latest</span>
+          </div>
+          <div class="bulletin-grid" id="bulletin-list"></div>
+        </div>
+      </section>
+
+      <section class="bracket-section section" id="bracket">
+        <div class="wrap">
+          <div class="section-head compact">
+            <div>
+              <p class="eyebrow dark">PLAYOFFS</p>
+              <h2>Pre-playoff bracket.</h2>
+            </div>
+          </div>
+
+          <div class="bracket-grid">
+            <div class="bracket-col">
+              <h4>Crown semifinals</h4>
+              <div class="match-card"><span>01</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>04</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>02</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>03</span><strong>TBD</strong><em>—</em></div>
+            </div>
+            <div class="bracket-col center-col">
+              <h4>Division final</h4>
+              <div class="match-card"><span>★</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>★</span><strong>TBD</strong><em>—</em></div>
+            </div>
+            <div class="championship-card">
+              <p>HEAVENLY BOWL</p>
+              <strong>Winner TBD</strong>
+            </div>
+            <div class="bracket-col center-col">
+              <h4>Division final</h4>
+              <div class="match-card"><span>★</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>★</span><strong>TBD</strong><em>—</em></div>
+            </div>
+            <div class="bracket-col">
+              <h4>Ascended semifinals</h4>
+              <div class="match-card"><span>01</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>04</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>02</span><strong>TBD</strong><em>—</em></div>
+              <div class="match-card"><span>03</span><strong>TBD</strong><em>—</em></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="updates-section section alt-bg" id="updates">
+        <div class="wrap updates-layout">
+          <div class="updates-copy">
+            <p class="eyebrow">COMING SOON</p>
+            <h2>Future updates.</h2>
+            <p>
+              More league coverage, polished match features, and expanded content are already in progress for the
+              next release.
+            </p>
+          </div>
+          <div class="update-list" id="update-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <div class="brand footer-brand">
+          <span class="brand-mark">HAD</span>
+          <span class="brand-copy">
+            <strong>HEAVENLY</strong>
+            <small>ATHLETICS DEPT.</small>
+          </span>
+        </div>
+        <span>© <span id="year"></span> HAD</span>
+        <a href="#home" class="footer-link">Back to top</a>
+      </div>
+    </footer>
+
+    <dialog id="operator-dialog" class="operator-dialog">
+      <form method="dialog">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow dark">OPERATOR</p>
+            <h2>Manage the league.</h2>
+          </div>
+          <button type="button" class="close-dialog" aria-label="Close dialog">×</button>
+        </div>
+
+        <p class="operator-note">
+          These edits are saved locally in the browser only. For shared multi-user admin access, connect a secure
+          backend or CMS.
+        </p>
+
+        <label>
+          Season number
+          <input id="season-input" type="number" min="1" value="2" />
+        </label>
+
+        <label>
+          Bulletin headlines (one per line)
+          <textarea id="bulletin-input" rows="5"></textarea>
+        </label>
+
+        <label>
+          Future updates (one per line)
+          <textarea id="updates-input" rows="5"></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button id="reset-content" type="button" class="btn btn-secondary">Reset</button>
+          <button id="save-content" type="button" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
 </html>
