@@ -1,4 +1,4 @@
-/* Remove public editing controls before any site feature scripts initialize. */
+/* Remove public editing controls and load the public site features. */
 (() => {
   const removePublicEditors = () => {
     document.getElementById('operator-toggle')?.remove();
@@ -53,12 +53,24 @@
     document.body.append(script);
   }
 
-  loadScript('site-enhancements.js?v=week9', () => {
-    // Defensive cleanup in case a feature script reintroduced a public editor.
+  // Disable the obsolete stats-sheet poll while site-enhancements initializes;
+  // stats-sheets.js below is the active stats-table implementation.
+  const nativeSetInterval = window.setInterval.bind(window);
+  const nativeFetch = window.fetch.bind(window);
+  window.setInterval = (callback, delay, ...args) => delay === 60_000 ? 0 : nativeSetInterval(callback, delay, ...args);
+  window.fetch = (input, ...args) => String(input).includes('gid=1438388237')
+    ? Promise.reject(new Error('Legacy stats sheet disabled'))
+    : nativeFetch(input, ...args);
+
+  loadScript('site-enhancements.js?v=seasonal-effects-fix', () => {
+    window.setInterval = nativeSetInterval;
+    window.fetch = nativeFetch;
     removePublicEditors();
-    loadScript('seasonal-effects.js?v=scroll-themes', () => {
-      loadScript('awards.js?v=season2-awards', () => {
-        loadScript('week9-standings.js?v=week9');
+    loadScript('stats-sheets.js?v=stats-sheet-restored-1', () => {
+      loadScript('seasonal-effects.js?v=scroll-themes', () => {
+        loadScript('awards.js?v=season2-awards', () => {
+          loadScript('week9-standings.js?v=week9');
+        });
       });
     });
   });
