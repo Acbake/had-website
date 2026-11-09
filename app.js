@@ -44,12 +44,22 @@
     document.body.append(script);
   }
 
-  // Seasonal effects previously observed every DOM change and rewrote the logo
-  // badge on each pass, causing an unbounded MutationObserver loop and page lag.
-  // Leave them disabled until that observer is fixed; the other site features remain enabled.
-  loadScript('site-enhancements.js?v=week9', () => {
-    loadScript('awards.js?v=season2-awards', () => {
-      loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+  // Stop the previous single-tab stats fetch and minute timer; stats-sheets.js
+  // replaces them with the four position-specific sheets.
+  const nativeSetInterval = window.setInterval.bind(window);
+  const nativeFetch = window.fetch.bind(window);
+  window.setInterval = (callback, delay, ...args) => delay === 60_000 ? 0 : nativeSetInterval(callback, delay, ...args);
+  window.fetch = (input, ...args) => String(input).includes('gid=1438388237')
+    ? Promise.reject(new Error('Legacy stats sheet disabled'))
+    : nativeFetch(input, ...args);
+
+  loadScript('site-enhancements.js?v=position-sheets', () => {
+    window.setInterval = nativeSetInterval;
+    window.fetch = nativeFetch;
+    loadScript('stats-sheets.js?v=position-sheets-1', () => {
+      loadScript('awards.js?v=season2-awards', () => {
+        loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+      });
     });
   });
 })();
