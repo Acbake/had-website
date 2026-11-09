@@ -1,189 +1,76 @@
-(() => {
-  'use strict';
-
-  const SHEET_ID = '157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho';
-  const SHEET_GID = '1438388237';
-  const POSITION_ALIASES = {
-    QB: ['QB', 'QUARTERBACK', 'QUARTER BACK'],
-    WR: ['WR', 'WIDE RECEIVER', 'WIDERECEIVER'],
-    DB: ['DB', 'DEFENSIVE BACK', 'CORNERBACK', 'SAFETY'],
-    DE: ['DE', 'DEFENSIVE END']
-  };
-  const POSITION_TERMS = {
-    QB: /quarter\s*back|passing|pass\s*(yd|yard|td|att|comp)|completion|interception|\bqb\b|\bqbr\b/i,
-    WR: /wide\s*receiver|receiv|catch|target|\byac\b|\bwr\b/i,
-    DB: /defensive\s*back|corner|safety|tackle|interception|pass\s*def|\bdb\b/i,
-    DE: /defensive\s*end|sack|qb\s*hit|pressure|tackle\s*for\s*loss|forced\s*fumble|\bde\b/i
-  };
-  const COMMON_COLUMNS = /^(team|player|player name|name|athlete|pos|position|role|number|#|season|week|game|division|jersey)$/i;
-  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const normalize = value => String(value ?? '').trim().toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
-  let table = null;
-  let selectedPosition = document.querySelector('.position-tab.active')?.dataset.position || 'QB';
-  let requestNumber = 0;
-
-  function gvizUrl() {
-    return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&tqx=out:json;responseHandler:hadStatsResponse_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+const SHEET_ID = '157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho';
+const SHEET_GID = '1438388237'; // Top-50 leaders tab
+const REFRESH_MS = 60_000;
+const STORAGE_KEY = 'had-operator-content-v3';
+const THEME_KEY = 'had-site-season-v1';
+const PLAYER_EMOJI_KEY = 'had-player-emojis-v1';
+const PHOTO_DB = 'had-local-photo-wall';
+const PHOTO_STORE = 'photos';
+const STAFF_GROUPS = [['directors','Athletics Directors','♜'],['managers','Athletics Managers','▣'],['board','Athletics Board','✦'],['executives','Athletics Executives','◆'],['headquarters','Athletics Headquarters','⬢']];
+const DEFAULT_CONTENT = {
+  season: 2,
+  bulletins: ['Kansas City keeps its perfect season alive','The playoff race is heating up across both divisions','Check the live stats sheet for the latest league numbers'],
+  updates: ['Official playoff bracket and matchup reveal','Expanded player stats and weekly leaders','More league announcements and event coverage'],
+  staff: {directors:[],managers:[],board:[],executives:[],headquarters:[]},
+  standings: {
+    crown:[{team:'Kansas City Firebirds',emoji:'',rank:1,record:'8-0',pd:'+94'},{team:'Pittsburgh Bullets',emoji:'',rank:2,record:'5-3',pd:'+71'},{team:'San Francisco Reapers',emoji:'',rank:3,record:'5-3',pd:'+16'},{team:'Boston Knights',emoji:'',rank:4,record:'4-4',pd:'+24'},{team:'Cleveland Pirates',emoji:'',rank:5,record:'4-4',pd:'-17'},{team:'Oklahoma City Monarchs',emoji:'',rank:6,record:'4-4',pd:'-27'},{team:'New Orleans Dragons',emoji:'',rank:7,record:'3-5',pd:'-61'},{team:'Tampa Bay Ravens',emoji:'',rank:8,record:'3-5',pd:'-105'}],
+    ascended:[{team:'Denver Lightning',emoji:'',rank:1,record:'7-1',pd:'+119'},{team:'Las Vegas Bulls',emoji:'',rank:2,record:'5-3',pd:'+63'},{team:'Portland Huskies',emoji:'',rank:3,record:'5-3',pd:'+58'},{team:'Salt Lake City Bugles',emoji:'',rank:4,record:'4-4',pd:'-17'},{team:'Seattle Mustangs',emoji:'',rank:5,record:'4-4',pd:'-18'},{team:'Minnesota Tarpedos',emoji:'',rank:6,record:'3-5',pd:'-43'},{team:'San Antonio Aztecs',emoji:'',rank:7,record:'2-6',pd:'-68'},{team:'Phoenix Dolphins',emoji:'',rank:8,record:'1-7',pd:'-129'}]
   }
+};
+function cloneDefaults(){return JSON.parse(JSON.stringify(DEFAULT_CONTENT));}
+function loadContent(){try{const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');if(!saved)return cloneDefaults();return {...cloneDefaults(),...saved,staff:{...DEFAULT_CONTENT.staff,...(saved.staff||{})},standings:{crown:saved.standings?.crown||DEFAULT_CONTENT.standings.crown,ascended:saved.standings?.ascended||DEFAULT_CONTENT.standings.ascended}};}catch{return cloneDefaults();}}
+let content=loadContent(),sheetHeaders=[],sheetRows=[],selectedPosition='QB',playerEmojis={};
+try{playerEmojis=JSON.parse(localStorage.getItem(PLAYER_EMOJI_KEY)||'{}')||{};}catch{playerEmojis={};}
+const POSITION_TERMS={QB:/quarter\s*back|passing|pass\s*(yd|yard|td|att|comp)|completion|interception|\bqb\b|\bqbr\b/i,WR:/wide\s*receiver|receiv|catch|target|\byac\b|\bwr\b/i,DB:/defensive\s*back|corner|safety|tackle|interception|pass\s*def|\bdb\b/i,DE:/defensive\s*end|sack|qb\s*hit|pressure|tackle\s*for\s*loss|forced\s*fumble|\bde\b/i};
+const POSITION_ALIASES={QB:['QB','QUARTERBACK','QUARTER BACK'],WR:['WR','WIDE RECEIVER','WIDERECEIVER'],DB:['DB','DEFENSIVE BACK','CORNERBACK','SAFETY'],DE:['DE','DEFENSIVE END']};
+const COMMON_COLUMNS=/^(team|player|player name|name|athlete|pos|position|role|number|#|season|week|game|division|jersey)$/i;
+const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+function parseCsv(text){const rows=[];let row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'&&quoted&&text[i+1]==='"'){cell+='"';i++;}else if(c==='"')quoted=!quoted;else if(c===','&& !quoted){row.push(cell);cell='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(value=>value.trim()))rows.push(row);row=[];cell='';}else cell+=c;}row.push(cell);if(row.some(value=>value.trim()))rows.push(row);return rows;}
+const normalize=value=>String(value||'').trim().toUpperCase().replace(/[^A-Z0-9%#]+/g,' ').trim();
+function findHeaderRow(rows){let bestIndex=0,bestScore=-Infinity;rows.slice(0,35).forEach((row,index)=>{const cells=row.map(normalize).filter(Boolean);const hasPlayer=cells.some(v=>/^(PLAYER|PLAYER NAME|NAME|ATHLETE)$/i.test(v));const hasPosition=cells.some(v=>/^(POS|POSITION|ROLE|PLAYER POSITION)$/i.test(v));const score=(hasPlayer?30:0)+(hasPosition?25:0)+cells.filter(v=>/^(TEAM|PLAYER|NAME|POS|POSITION|ROLE|PASS|RUSH|REC|TACKLE|SACK|INT|YDS|TD)$/i.test(v)).length; if(score>bestScore){bestScore=score;bestIndex=index;}});return bestIndex;}
+function renderSeason(){const season=Number(content.season)||2;const hero=document.getElementById('hero-season');if(hero)hero.textContent=`SEASON ${season}`;const footer=document.getElementById('season-footer');if(footer)footer.textContent=season;}
+function renderStandings(){for(const division of ['crown','ascended']){const list=document.getElementById(`${division}-standings`);if(!list)continue;const teams=[...(content.standings?.[division]||[])].sort((a,b)=>(Number(a.rank)||99)-(Number(b.rank)||99)).slice(0,8);list.innerHTML=teams.map((item,index)=>`<li class="standing-row"><span class="standing-rank">${index+1}</span><span class="standing-emoji">${escapeHtml(item.emoji) || '<span class="emoji-placeholder">•</span>'}</span><span class="standing-team">${escapeHtml(item.team)}</span><span class="standing-record">${escapeHtml(item.record||'—')}</span><span class="standing-pd ${String(item.pd).trim().startsWith('-')?'negative':'positive'}">${escapeHtml(item.pd||'—')} <small>PD</small></span></li>`).join('');}
+  const directory=document.getElementById('team-directory');if(directory)directory.innerHTML=[...(content.standings?.crown||[]),...(content.standings?.ascended||[])].map(item=>`<div class="team-card"><span>${escapeHtml(item.emoji) || '✦'}</span><b>${escapeHtml(item.team)}</b></div>`).join('');}
+function renderStandingsEditor(){for(const division of ['crown','ascended']){const root=document.getElementById(`${division}-editor`);if(!root)continue;root.innerHTML=(content.standings[division]||[]).map((item,index)=>`<div class="editor-team-row"><span class="editor-team-name">${escapeHtml(item.team)}</span>${[['rank','Rank'],['emoji','Emoji'],['record','W-L'],['pd','PD']].map(([field,label])=>`<label>${label}<input type="${field==='rank'?'number':'text'}" ${field==='rank'?'min="1" max="8"':'maxlength="10"'} data-division="${division}" data-index="${index}" data-field="${field}" value="${escapeHtml(item[field])}"></label>`).join('')}</div>`).join('');}}
+function renderStaff(){const host=document.getElementById('staff-hierarchy');if(!host)return;host.innerHTML=STAFF_GROUPS.map(([key,title,icon])=>{const names=content.staff?.[key]||[];return `<article class="staff-card"><div class="staff-icon" aria-hidden="true">${icon}</div><p class="eyebrow dark">HAD ${title}</p><h3>${escapeHtml(title)}</h3>${names.length?`<ul>${names.map(name=>`<li>${escapeHtml(name)}</li>`).join('')}</ul>`:'<p class="staff-empty">Staff directory coming soon.</p>'}</article>`;}).join('');}
+function renderBulletins(){const b=document.getElementById('bulletin-list');if(b)b.innerHTML=(content.bulletins||[]).map((text,i)=>`<article class="bulletin-card"><span class="bulletin-icon">${['✦','↗','▤'][i % 3]}</span><div><p class="eyebrow dark">HFL NEWS · ${String(i+1).padStart(2,'0')}</p><h3>${escapeHtml(text)}</h3><small>LEAGUE CENTRAL</small></div></article>`).join('');
+const u=document.getElementById('update-list');if(u)u.innerHTML=(content.updates||[]).map((text,i)=>`<article class="update-item"><span class="update-index">${String(i+1).padStart(2,'0')}</span><div><h3>${escapeHtml(text)}</h3><small>IN DEVELOPMENT</small></div><span class="update-status">COMING SOON</span></article>`).join('');}
+function renderBracket(){const host=document.getElementById('bracket');if(!host)return;host.innerHTML=`<div class="wrap"><div class="section-head"><div><p class="eyebrow">THE ROAD TO THE TITLE</p><h2>Heavenly Football League Season 2, Playoff Bracket.</h2></div><span class="section-note">12 teams · four rounds · all teams TBD</span></div><div class="hfl-seeds"><h3>Playoff teams</h3><div class="hfl-seed-grid">${Array.from({length:12},(_,i)=>`<div class="hfl-seed"><span class="hfl-seed-icon">HFL</span><span class="hfl-seed-number">${String(i+1).padStart(2,'0')}</span><strong>TBD</strong></div>`).join('')}</div></div><div class="hfl-round"><h3>Heavenly Gauntlet</h3><p class="hfl-round-note">Seeds 5–12 play the first elimination round.</p><div class="hfl-game-grid">${['Seed 5 vs. Seed 12','Seed 6 vs. Seed 11','Seed 7 vs. Seed 10','Seed 8 vs. Seed 9'].map(label=>`<article class="hfl-game"><h4>${label}</h4><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div></article>`).join('')}</div></div><div class="hfl-round"><h3>Elite Eight</h3><div class="hfl-game-grid">${['Seed 1 vs. Gauntlet winner','Seed 4 vs. Gauntlet winner','Seed 2 vs. Gauntlet winner','Seed 3 vs. Gauntlet winner'].map(label=>`<article class="hfl-game"><h4>${label}</h4><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div></article>`).join('')}</div></div><div class="hfl-round"><h3>Final Four</h3><div class="hfl-game-grid">${['Elite Eight winner','Elite Eight winner'].map(label=>`<article class="hfl-game"><h4>${label}</h4><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div></article>`).join('')}</div></div><div class="hfl-round hfl-championship"><h3><span aria-hidden="true">🏆</span> Heavenly Bowl 2</h3><div class="hfl-game-grid"><article class="hfl-game"><h4>Championship</h4><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div></article></div></div></div>`; if(!document.getElementById('hfl-bracket-styles')){const style=document.createElement('style');style.id='hfl-bracket-styles';style.textContent=`#bracket .hfl-seeds,#bracket .hfl-round{margin:1.75rem 0;padding:1.4rem;border:1px solid rgba(32,42,50,.14);border-radius:12px;background:rgba(255,255,255,.72)}#bracket .hfl-seeds h3,#bracket .hfl-round h3{margin:0 0 1rem;font-family:Oswald,Inter,sans-serif;font-size:1.5rem}#bracket .hfl-seed-grid,#bracket .hfl-game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.8rem}#bracket .hfl-seed,#bracket .hfl-game{padding:.9rem 1rem;border:1px solid rgba(32,42,50,.12);border-radius:8px;background:#fff}#bracket .hfl-seed{display:flex;align-items:center;gap:.7rem;min-height:54px}#bracket .hfl-seed-icon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#102437;color:#fff;font-size:.7rem;font-weight:800}#bracket .hfl-seed-number{color:#697780;font-size:.8rem;font-weight:700}#bracket .hfl-game h4{margin:0 0 .45rem;color:#697780;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}#bracket .hfl-contestant{display:flex;justify-content:space-between;padding:.55rem 0;border-top:1px solid #e6e9e7}#bracket .hfl-contestant strong{font-family:Oswald,Inter,sans-serif}#bracket .hfl-round-note{color:#697780}#bracket .hfl-championship{border-color:#b65a32;background:#fff8ec}`;document.head.append(style);}}
+function playerNameIndex(){return sheetHeaders.findIndex(h=>/^(player|player name|name|athlete)$/i.test(String(h).trim()));}
+function rowEmojiKey(row,index){const nameIndex=playerNameIndex();const name=nameIndex>=0?String(row[nameIndex]||'').trim():'';return `${selectedPosition}:${name||`row-${index+1}`}`;}
+function savePlayerEmoji(key,value){if(value)playerEmojis[key]=value;else delete playerEmojis[key];localStorage.setItem(PLAYER_EMOJI_KEY,JSON.stringify(playerEmojis));}
+function renderPositionStats(){const host=document.getElementById('stats-table'),hint=document.getElementById('position-hint');if(!host||!sheetHeaders.length)return;const title=document.getElementById('stats-table-title');if(title)title.textContent=`${selectedPosition} · TOP 10 LEADERS`;
+  const pi=sheetHeaders.findIndex(h=>/^(pos|position|role|player position)$/i.test(String(h).trim()));
+  let rows=sheetRows.map((row,index)=>({row,index}));
+  if(pi>=0)rows=rows.filter(({row})=>POSITION_ALIASES[selectedPosition].some(alias=>normalize(alias)===normalize(row[pi])));
+  const positionColumns=sheetHeaders.map((header,index)=>COMMON_COLUMNS.test(String(header).trim())||POSITION_TERMS[selectedPosition].test(String(header))?index:-1).filter(index=>index>=0);
+  const visible=positionColumns.length?positionColumns:sheetHeaders.map((_,index)=>index);
+  rows=rows.filter(({row})=>row.some(value=>String(value).trim())&&!row.every(value=>/^(pos|position|player|name|overall|—|-)?$/i.test(String(value).trim()))).slice(0,10);
+  if(!rows.length){host.innerHTML=`<div class="sheet-message"><strong>No ${selectedPosition} leaders found.</strong><p>Check that the selected sheet tab contains player rows for ${selectedPosition}.</p></div>`; if(hint)hint.textContent=`No ${selectedPosition} leaders were found in the connected sheet.`; return;}
+  if(hint)hint.textContent=`Showing ${rows.length} ${selectedPosition} leader${rows.length===1?'':'s'} (maximum 10). Add an emoji in the last column; it saves on this device.`;
+  const html=rows.map(({row,index})=>{const key=rowEmojiKey(row,index);const label=playerNameIndex()>=0?row[playerNameIndex()]:`${selectedPosition} leader ${index+1}`;return `<tr>${visible.map(i=>`<td>${escapeHtml(row[i]||'—')}</td>`).join('')}<td class="player-emoji-cell"><input class="player-emoji-input" type="text" maxlength="8" placeholder="🏈" aria-label="Emoji for ${escapeHtml(label)}" data-emoji-key="${escapeHtml(key)}" value="${escapeHtml(playerEmojis[key]||'')}"></td></tr>`;}).join('');
+  host.innerHTML=`<div class="table-scroll"><table><thead><tr>${visible.map(i=>`<th>${escapeHtml(sheetHeaders[i]||'—')}</th>`).join('')}<th class="player-emoji-heading">Emoji</th></tr></thead><tbody>${html}</tbody></table></div>`;
+  host.querySelectorAll('.player-emoji-input').forEach(input=>input.addEventListener('input',()=>savePlayerEmoji(input.dataset.emojiKey,input.value.trim())));
+}
+async function loadStats(){const status=document.getElementById('sheet-status'),dot=document.getElementById('status-dot'),host=document.getElementById('stats-table');if(!status||!dot||!host)return;status.textContent='Connecting to leaders sheet…';
+  try{const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&_=${Date.now()}`;const response=await fetch(url,{cache:'no-store'});if(!response.ok)throw new Error('Sheet unavailable');const parsed=parseCsv(await response.text());if(!parsed.length)throw new Error('No rows');const headerIndex=findHeaderRow(parsed);sheetHeaders=parsed[headerIndex].map((cell,index)=>String(cell||`Column ${index+1}`).trim());sheetRows=parsed.slice(headerIndex+1).filter(row=>row.some(value=>String(value).trim())).slice(0,50);renderPositionStats();status.textContent=`Connected · Top ${sheetRows.length} · updated ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;dot.classList.add('connected');}
+  catch(error){host.innerHTML=`<div class="sheet-message"><strong>Leaders could not load.</strong><p>Make sure the Google Sheet is available to the public: File → Share → General access → Anyone with the link → Viewer.</p><a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${SHEET_GID}#gid=${SHEET_GID}" target="_blank" rel="noopener">Open the Top 50 sheet ↗</a></div>`;status.textContent='Waiting for spreadsheet access';dot.classList.remove('connected');}}
 
-  function loadSheet() {
-    return new Promise((resolve, reject) => {
-      const callbackName = `hadStatsResponse_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      const script = document.createElement('script');
-      const timer = setTimeout(() => finish(new Error('Google Sheets did not respond in time.')), 15000);
-      function finish(error, result) {
-        clearTimeout(timer);
-        try { delete window[callbackName]; } catch { window[callbackName] = undefined; }
-        script.remove();
-        error ? reject(error) : resolve(result);
-      }
-      window[callbackName] = response => {
-        if (!response || response.status !== 'ok' || !response.table) {
-          finish(new Error(response?.errors?.map(item => item.detailed_message || item.message).join('; ') || 'The sheet did not return a readable table.'));
-          return;
-        }
-        finish(null, response.table);
-      };
-      script.onerror = () => finish(new Error('Google Sheets blocked the request. Check that the spreadsheet is shared for public viewing.'));
-      script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}&headers=1&tqx=${encodeURIComponent(`out:json;responseHandler:${callbackName}`)}`;
-      document.head.append(script);
-    });
-  }
-
-  function cellValue(cell) {
-    if (!cell) return '';
-    return cell.f !== null && cell.f !== undefined ? String(cell.f) : (cell.v === null || cell.v === undefined ? '' : String(cell.v));
-  }
-
-  function csvEscape(value) {
-    const text = String(value ?? '');
-    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-  }
-
-  function tableToCsv(data) {
-    const headers = data.cols.map((col, i) => col.label || col.id || `Stat ${i + 1}`);
-    return [headers, ...data.rows.map(row => (row.c || []).map(cellValue))]
-      .map(row => row.map(csvEscape).join(',')).join('\r\n');
-  }
-
-  // Keep the existing site's rendering and per-player emoji fields, but feed them
-  // through Google's JSONP endpoint (no browser CORS fetch required).
-  const nativeFetch = window.fetch?.bind(window);
-  if (nativeFetch) {
-    window.fetch = (input, options) => {
-      const url = typeof input === 'string' ? input : input?.url;
-      if (url && url.includes('docs.google.com/spreadsheets') && url.includes('format=csv')) {
-        return loadSheet().then(data => new Response(tableToCsv(data), {
-          status: 200,
-          headers: { 'Content-Type': 'text/csv; charset=utf-8' }
-        }));
-      }
-      return nativeFetch(input, options);
-    };
-  }
-
-  function showStatsError(error, id) {
-    if (id !== requestNumber) return;
-    const status = document.getElementById('sheet-status');
-    const dot = document.getElementById('status-dot');
-    const host = document.getElementById('stats-table');
-    if (status) status.textContent = 'Could not connect to the public stats sheet';
-    dot?.classList.remove('connected');
-    if (host) host.innerHTML = `<div class="sheet-message"><strong>Stats sheet could not be read.</strong><p>${escapeHtml(error?.message || 'Check the sheet sharing settings and try again.')}</p><p>Open the linked sheet, then use Share → General access → Anyone with the link → Viewer. If it is already public, check that the Top 50 tab is not hidden or restricted.</p><a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${SHEET_GID}#gid=${SHEET_GID}" target="_blank" rel="noopener">Open the Top 50 stats sheet ↗</a></div>`;
-  }
-
-  function renderStats(data) {
-    const host = document.getElementById('stats-table');
-    if (!host) return;
-    const headers = data.cols.map((col, index) => String(col.label || col.id || `Stat ${index + 1}`).trim());
-    const rows = data.rows.map(item => (item.c || []).map(cellValue));
-    const posIndex = headers.findIndex(header => /^(pos|position|role|player position)$/i.test(header));
-    const nameIndex = headers.findIndex(header => /^(player|player name|name|athlete)$/i.test(header));
-    let selectedRows = rows.map((row, index) => ({row, index})).filter(({row}) => row.some(value => String(value).trim()));
-    if (posIndex >= 0) {
-      const aliases = POSITION_ALIASES[selectedPosition] || [selectedPosition];
-      selectedRows = selectedRows.filter(({row}) => aliases.some(alias => normalize(alias) === normalize(row[posIndex])));
-    }
-
-    const visible = headers.map((header, index) => ({header, index}))
-      .filter(({header}) => COMMON_COLUMNS.test(header) || POSITION_TERMS[selectedPosition]?.test(header))
-      .map(item => item.index);
-    const shownColumns = visible.length ? visible : headers.map((_, index) => index);
-    const leaders = selectedRows.slice(0, 10);
-    const title = document.getElementById('stats-table-title');
-    if (title) title.textContent = `${selectedPosition} · TOP 10 LEADERS`;
-    const hint = document.getElementById('position-hint');
-    if (!leaders.length) {
-      host.innerHTML = `<div class="sheet-message"><strong>No ${escapeHtml(selectedPosition)} leaders found.</strong><p>The sheet is connected, but it has no rows matching this position. Check the Pos/Position column or choose another position.</p></div>`;
-      if (hint) hint.textContent = `No ${selectedPosition} player rows are tagged in the connected sheet.`;
-      return;
-    }
-    if (hint) hint.textContent = `Showing ${leaders.length} ${selectedPosition} leader${leaders.length === 1 ? '' : 's'} from the live Google Sheet.`;
-    const body = leaders.map(({row}, rank) => {
-      const player = nameIndex >= 0 ? row[nameIndex] : `${selectedPosition} leader ${rank + 1}`;
-      const key = `${selectedPosition}:${player || rank}`;
-      return `<tr>${shownColumns.map(index => `<td>${escapeHtml(row[index] || '—')}</td>`).join('')}<td class="player-emoji-cell"><input class="player-emoji-input" type="text" maxlength="8" placeholder="🏈" aria-label="Emoji for ${escapeHtml(player)}" data-emoji-key="${escapeHtml(key)}"></td></tr>`;
-    }).join('');
-    host.innerHTML = `<div class="table-scroll"><table><thead><tr>${shownColumns.map(index => `<th>${escapeHtml(headers[index])}</th>`).join('')}<th class="player-emoji-heading">Emoji</th></tr></thead><tbody>${body}</tbody></table></div>`;
-    let saved = {};
-    try { saved = JSON.parse(localStorage.getItem('had-player-emojis-v1') || '{}') || {}; } catch { /* ignore invalid local data */ }
-    host.querySelectorAll('.player-emoji-input').forEach(input => {
-      input.value = saved[input.dataset.emojiKey] || '';
-      input.addEventListener('input', () => {
-        const values = JSON.parse(localStorage.getItem('had-player-emojis-v1') || '{}');
-        if (input.value.trim()) values[input.dataset.emojiKey] = input.value.trim();
-        else delete values[input.dataset.emojiKey];
-        localStorage.setItem('had-player-emojis-v1', JSON.stringify(values));
-      });
-    });
-  }
-
-  async function refreshStats() {
-    const id = ++requestNumber;
-    const status = document.getElementById('sheet-status');
-    if (status) status.textContent = 'Connecting to the live stats sheet…';
-    try {
-      const result = await loadSheet();
-      if (id !== requestNumber) return;
-      table = result;
-      renderStats(table);
-      if (status) status.textContent = `Connected · ${result.rows.length} sheet rows · updated ${new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}`;
-      document.getElementById('status-dot')?.classList.add('connected');
-    } catch (error) {
-      showStatsError(error, id);
-    }
-  }
-
-  document.querySelectorAll('.position-tab').forEach(tab => tab.addEventListener('click', () => {
-    selectedPosition = tab.dataset.position || 'QB';
-    if (table) renderStats(table);
-  }));
-  document.getElementById('refresh-stats')?.addEventListener('click', refreshStats);
-  refreshStats();
-  setInterval(refreshStats, 60000);
-
-  function bracketGame(label) {
-    return `<article class="hfl-game"><h4>${escapeHtml(label)}</h4><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div><div class="hfl-contestant"><span>TBD</span><strong>?</strong></div></article>`;
-  }
-
-  function renderBracket() {
-    const section = document.getElementById('bracket');
-    if (!section) return;
-    section.innerHTML = `<div class="wrap"><div class="section-head"><div><p class="eyebrow">THE ROAD TO THE TITLE</p><h2>Heavenly Football League Season 2, Playoff Bracket.</h2></div><span class="section-note">12 teams · four rounds · all teams TBD</span></div>
-      <div class="hfl-seeds"><h3>Playoff teams</h3><div class="hfl-seed-grid">${Array.from({length:12}, (_, i) => `<div class="hfl-seed"><span class="hfl-seed-icon" aria-label="HFL">HFL</span><span class="hfl-seed-number">${String(i + 1).padStart(2, '0')}</span><strong>TBD</strong></div>`).join('')}</div></div>
-      <div class="hfl-round"><h3>Heavenly Gauntlet</h3><p class="hfl-round-note">Seeds 1–4 receive a first-round bye.</p><div class="hfl-game-grid">${['Seed 5 vs. Seed 12','Seed 6 vs. Seed 11','Seed 7 vs. Seed 10','Seed 8 vs. Seed 9'].map(bracketGame).join('')}</div></div>
-      <div class="hfl-round"><h3>Elite Eight</h3><div class="hfl-game-grid">${['Seed 1 vs. Gauntlet winner','Seed 4 vs. Gauntlet winner','Seed 2 vs. Gauntlet winner','Seed 3 vs. Gauntlet winner'].map(bracketGame).join('')}</div></div>
-      <div class="hfl-round"><h3>Final Four</h3><div class="hfl-game-grid">${['Elite Eight winner','Elite Eight winner'].map(bracketGame).join('')}</div></div>
-      <div class="hfl-round hfl-championship"><h3><span aria-hidden="true">🏆</span> Heavenly Bowl 2</h3><div class="hfl-game-grid">${bracketGame('Championship')}</div></div>
-      <div class="hfl-upload-notice"><strong>Public emoji uploads</strong><p>To make uploaded emoji images appear for everyone while restricting uploads to you, this site needs authenticated image storage. I’m not enabling an insecure public upload endpoint. Connect an authenticated storage project (for example, Firebase Storage or Supabase Storage) to activate this safely.</p></div>
-      </div>`;
-    if (!document.getElementById('hfl-enhancement-styles')) {
-      const style = document.createElement('style');
-      style.id = 'hfl-enhancement-styles';
-      style.textContent = `#bracket .hfl-seeds,#bracket .hfl-round{margin:1.75rem 0;padding:1.4rem;border:1px solid rgba(32,42,50,.14);border-radius:12px;background:rgba(255,255,255,.72)}#bracket .hfl-seeds h3,#bracket .hfl-round h3{margin:0 0 1rem;font-family:Oswald,Inter,sans-serif;font-size:1.5rem}#bracket .hfl-seed-grid,#bracket .hfl-game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:.8rem}#bracket .hfl-seed,#bracket .hfl-game{padding:.9rem 1rem;border:1px solid rgba(32,42,50,.12);border-radius:8px;background:#fff}#bracket .hfl-seed{display:flex;align-items:center;gap:.7rem;min-height:54px}#bracket .hfl-seed-icon{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#102437;color:#fff;font-size:.7rem;font-weight:800}#bracket .hfl-seed-number{color:#697780;font-size:.8rem;font-weight:700}#bracket .hfl-game h4{margin:0 0 .45rem;color:#697780;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}#bracket .hfl-contestant{display:flex;justify-content:space-between;padding:.55rem 0;border-top:1px solid #e6e9e7}#bracket .hfl-contestant strong{font-family:Oswald,Inter,sans-serif}#bracket .hfl-round-note,#bracket .hfl-upload-notice p{color:#697780}#bracket .hfl-championship{border-color:#b65a32;background:#fff8ec}#bracket .hfl-upload-notice{margin:1.5rem 0;padding:1rem 1.2rem;border-left:4px solid #b65a32;background:#f4f3ef}#bracket .hfl-upload-notice p{margin:.5rem 0 0}`;
-      document.head.append(style);
-    }
-  }
-
-  renderBracket();
-})();
+document.querySelectorAll('.position-tab').forEach(tab=>tab.addEventListener('click',()=>{selectedPosition=tab.dataset.position;document.querySelectorAll('.position-tab').forEach(item=>{const active=item===tab;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));});renderPositionStats();}));
+document.getElementById('refresh-stats')?.addEventListener('click',loadStats);loadStats();setInterval(loadStats,REFRESH_MS);renderSeason();renderStandings();renderStaff();renderBulletins();renderBracket();const year=document.getElementById('year');if(year)year.textContent=new Date().getFullYear();
+const menu=document.getElementById('main-nav'),menuButton=document.getElementById('menu-toggle');menuButton?.addEventListener('click',()=>{const open=menu.classList.toggle('open');menuButton.setAttribute('aria-expanded',String(open));});menu?.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{menu.classList.remove('open');menuButton?.setAttribute('aria-expanded','false');}));
+const operator=document.getElementById('operator-dialog');document.getElementById('operator-toggle')?.addEventListener('click',()=>{document.getElementById('season-input').value=content.season;document.getElementById('bulletin-input').value=(content.bulletins||[]).join('\n');document.getElementById('updates-input').value=(content.updates||[]).join('\n');renderStandingsEditor();operator?.showModal();});document.querySelector('.close-dialog')?.addEventListener('click',()=>operator?.close());
+document.getElementById('save-content')?.addEventListener('click',()=>{document.querySelectorAll('.editor-team-row input').forEach(input=>{const {division,index,field}=input.dataset;const team=content.standings?.[division]?.[Number(index)];if(team){team[field]=field==='rank'?Math.min(8,Math.max(1,Number(input.value)||1)):input.value.trim();}});content.season=Math.max(1,Number(document.getElementById('season-input')?.value)||2);content.bulletins=(document.getElementById('bulletin-input')?.value||'').split('\n').map(line=>line.trim()).filter(Boolean);content.updates=(document.getElementById('updates-input')?.value||'').split('\n').map(line=>line.trim()).filter(Boolean);localStorage.setItem(STORAGE_KEY,JSON.stringify(content));renderSeason();renderStandings();renderStaff();renderBulletins();operator?.close();});
+document.getElementById('reset-content')?.addEventListener('click',()=>{content=cloneDefaults();localStorage.removeItem(STORAGE_KEY);renderSeason();renderStandings();renderStaff();renderBulletins();operator?.close();});
+function setTheme(theme,save=true){const valid=['autumn','winter','spring','summer'].includes(theme)?theme:'autumn';document.documentElement.dataset.theme=valid;const select=document.getElementById('theme-select');if(select)select.value=valid;if(save)localStorage.setItem(THEME_KEY,valid);renderSeasonDecor(valid);}
+function renderSeasonDecor(theme){const host=document.getElementById('seasonal-decor');if(!host)return;host.replaceChildren();if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const symbols={autumn:['🍂','🌾','🍁'],winter:['❄','✦','❅'],spring:['🌼','🌷','✿'],summer:['☀','🌴','🌊']};const items=symbols[theme]||symbols.autumn;for(let i=0;i<14;i++){const s=document.createElement('span');s.className='season-part';s.textContent=items[i % items.length];s.style.left=`${Math.random()*100}%`;s.style.animationDelay=`${Math.random()*16}s`;s.style.animationDuration=`${12+Math.random()*12}s`;host.append(s);}}
+document.getElementById('theme-select')?.addEventListener('change',event=>setTheme(event.target.value));setTheme(localStorage.getItem(THEME_KEY)||'autumn',false);
+// Photo uploads are private to the current browser (IndexedDB); they are not public/shared uploads.
+function openPhotoDatabase(){return new Promise((resolve,reject)=>{const request=indexedDB.open(PHOTO_DB,1);request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(PHOTO_STORE))db.createObjectStore(PHOTO_STORE,{keyPath:'id'});};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+async function photoRequest(mode,action){const db=await openPhotoDatabase();return new Promise((resolve,reject)=>{const tx=db.transaction(PHOTO_STORE,mode);const store=tx.objectStore(PHOTO_STORE);const result=action(store);tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);});}
+function ensurePhotoWall(){if(document.getElementById('photo-wall'))return;const section=document.createElement('section');section.className='photo-wall-section section';section.id='photo-wall';section.innerHTML=`<div class="wrap"><div class="section-head"><div><p class="eyebrow dark">HAD MOMENTS</p><h2>League photo wall.</h2></div><label class="photo-upload-button">Upload images<input id="photo-upload" type="file" accept="image/*" multiple hidden></label></div><div id="photo-grid" class="photo-grid"><p class="photo-empty">No photos uploaded yet.</p></div></div>`;const target=document.getElementById('teams')||document.getElementById('bulletin');if(target)target.before(section);else document.querySelector('main')?.append(section);section.querySelector('#photo-upload').addEventListener('change',handlePhotoUpload);renderPhotos();}
+async function optimizeImage(file){if(!file.type.startsWith('image/'))throw Error('Please choose an image file.');if(file.size>15*1024*1024)throw Error('Please choose an image smaller than 15 MB.');const bitmap=await createImageBitmap(file);const maxSize=1500;const scale=Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);return new Promise(resolve=>canvas.toBlob(blob=>resolve(blob), 'image/jpeg', 0.88));}
+async function handlePhotoUpload(event){const files=[...event.target.files];const input=event.target;input.disabled=true;try{for(const file of files){const blob=await optimizeImage(file);await photoRequest('readwrite',store=>store.put({id:crypto.randomUUID(),name:file.name,caption:file.name.replace(/\.[^.]+$/, ''),blob,createdAt:Date.now()}));}await renderPhotos();}catch(error){alert(error.message||'Could not save this image in your browser.');}finally{input.value='';input.disabled=false;}}
+async function renderPhotos(){const grid=document.getElementById('photo-grid');if(!grid)return;try{const items=await photoRequest('readonly',store=>store.getAll());if(!items?.length){grid.innerHTML='<p class="photo-empty">No photos uploaded yet.</p>';return;}grid.innerHTML=items.sort((a,b)=>b.createdAt-a.createdAt).map(item=>`<figure class="photo-card"><img src="${URL.createObjectURL(item.blob)}" alt="${escapeHtml(item.caption)}"><figcaption>${escapeHtml(item.caption)}</figcaption><button type="button" class="photo-delete" data-photo-id="${escapeHtml(item.id)}">Remove</button></figure>`).join('');grid.querySelectorAll('.photo-delete').forEach(button=>button.addEventListener('click',async()=>{const id=button.dataset.photoId;await photoRequest('readwrite',store=>store.delete(id));await renderPhotos();}));}catch{grid.innerHTML='<p class="photo-empty">Image storage is unavailable in this browser.</p>'}}
+ensurePhotoWall();
+const extraStyles=document.createElement('link');extraStyles.rel='stylesheet';extraStyles.href='features.css?v=photos-top10';document.head.append(extraStyles);
