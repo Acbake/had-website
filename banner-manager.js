@@ -7,10 +7,6 @@
   const MAX_DIMENSION = 1800;
   const MAX_DATA_URL_LENGTH = 2_300_000;
 
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
   function readBanner() {
     try {
       const value = localStorage.getItem(STORAGE_KEY);
@@ -20,10 +16,12 @@
   }
 
   function renderBanner(dataUrl) {
-    document.querySelectorAll('.user-season-banner').forEach(el => el.remove());
     const hero = document.querySelector('.hero');
-    if (!hero || !dataUrl) return;
-    hero.classList.add('has-user-season-banner');
+    if (!hero) return;
+    hero.querySelectorAll('.user-season-banner').forEach(el => el.remove());
+    hero.classList.toggle('has-user-season-banner', Boolean(dataUrl));
+    if (!dataUrl) return;
+
     const layer = document.createElement('div');
     layer.className = 'user-season-banner';
     layer.setAttribute('aria-hidden', 'true');
@@ -64,22 +62,22 @@
     style.id = 'season-banner-style';
     style.textContent = `
       .hero.has-user-season-banner{position:relative;isolation:isolate;overflow:hidden}
-      .hero .user-season-banner{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:.32;pointer-events:none}
-      .hero.has-user-season-banner>.wrap{position:relative}
+      .hero .user-season-banner{position:absolute;inset:0;width:100%;height:100%;z-index:0;background-size:cover;background-position:center 42%;background-repeat:no-repeat;opacity:.5;pointer-events:none}
+      .hero.has-user-season-banner>.wrap{position:relative;z-index:1}
       .banner-upload-panel{margin:1rem 0;padding:1rem;border:1px solid var(--line,#dfe3df);border-radius:8px;background:var(--surface,#fff)}
       .banner-upload-panel h3{margin:0 0 .4rem;font-family:Oswald,Inter,sans-serif}
       .banner-upload-panel p{margin:.35rem 0 .8rem;color:var(--muted,#697780);font-size:.9rem}
       .banner-upload-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem}
-      .banner-upload-actions button,.banner-upload-actions label{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.55rem .85rem;border:1px solid var(--line,#dfe3df);border-radius:4px;background:var(--surface,#fff);color:var(--ink,#202a32);font:inherit;font-weight:700;cursor:pointer}
+      .banner-upload-actions button,.banner-upload-actions label{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:.55rem .85rem;border:1px solid var(--line,#dfe3df);border-radius:4px;background:var(--navy-900,#102437);color:#fff;cursor:pointer;font:inherit}
       .banner-upload-actions input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
       .banner-upload-status{min-height:1.4em;font-size:.85rem;color:var(--muted,#697780)}
+      @media(max-width:600px){.hero .user-season-banner{background-position:center center}}
     `;
     document.head.append(style);
   }
 
   function installPanel() {
-    const dialog = document.getElementById('operator-dialog');
-    const form = dialog?.querySelector('form');
+    const form = document.getElementById('operator-dialog')?.querySelector('form');
     if (!form || document.getElementById('season-banner-panel')) return false;
     const panel = document.createElement('section');
     panel.className = 'banner-upload-panel';
@@ -123,6 +121,6 @@
     const observer = new MutationObserver(() => {
       if (installPanel()) observer.disconnect();
     });
-    observer.observe(document.body, {childList:true,subtree:true});
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 })();

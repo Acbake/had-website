@@ -44,7 +44,6 @@
     document.body.append(script);
   }
 
-  // Prevent the old single-sheet request and its refresh timer during startup.
   const nativeSetInterval = window.setInterval.bind(window);
   const nativeFetch = window.fetch.bind(window);
   window.setInterval = (callback, delay, ...args) => delay === 60_000 ? 0 : nativeSetInterval(callback, delay, ...args);
@@ -55,10 +54,10 @@
   loadScript('site-enhancements.js?v=seasonal-effects-fix', () => {
     window.setInterval = nativeSetInterval;
     window.fetch = nativeFetch;
-    loadScript('seasonal-effects.js?v=falling-easter-eggs', () => {
+    loadScript('seasonal-effects.js?v=falling-banner-fix-2', () => {
       loadScript('stats-sheets.js?v=position-sheets-1', () => {
         loadScript('awards.js?v=season2-awards', () => {
-          loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+          loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=full-hero-banner-2'));
         });
       });
     });
