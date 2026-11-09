@@ -1,5 +1,14 @@
-/* Apply the latest week-9 standings before rendering, then load the site features. */
+/* Remove public editing controls before any site feature scripts initialize. */
 (() => {
+  const removePublicEditors = () => {
+    document.getElementById('operator-toggle')?.remove();
+    document.getElementById('operator-dialog')?.remove();
+    document.getElementById('season-banner-panel')?.remove();
+    document.querySelectorAll('.user-season-banner').forEach(element => element.remove());
+    document.querySelector('.hero')?.classList.remove('has-user-season-banner');
+  };
+  removePublicEditors();
+
   const key = 'had-operator-content-v3';
   const data = {
     season: 2,
@@ -45,13 +54,11 @@
   }
 
   loadScript('site-enhancements.js?v=week9', () => {
+    // Defensive cleanup in case a feature script reintroduced a public editor.
+    removePublicEditors();
     loadScript('seasonal-effects.js?v=scroll-themes', () => {
       loadScript('awards.js?v=season2-awards', () => {
-        loadScript('week9-standings.js?v=week9', () => {
-          loadScript('banner-manager.js?v=shared-season-banner', () => {
-            loadScript('operator-season-only.js?v=admin-gate-1');
-          });
-        });
+        loadScript('week9-standings.js?v=week9');
       });
     });
   });

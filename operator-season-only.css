@@ -1,13 +1,1 @@
-/* Only the admin URL can access season/bannner editing. */
-#operator-toggle,
-#operator-dialog,
-#season-banner-panel,
-#reset-content {
-  display: none !important;
-}
-
-body[data-admin="true"] #operator-toggle,
-body[data-admin="true"] #operator-dialog,
-body[data-admin="true"] #season-banner-panel {
-  display: block !important;
-}
+/* Public operator and banner editing have been retired. */
