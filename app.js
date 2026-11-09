@@ -44,11 +44,12 @@
     document.body.append(script);
   }
 
+  // Seasonal effects previously observed every DOM change and rewrote the logo
+  // badge on each pass, causing an unbounded MutationObserver loop and page lag.
+  // Leave them disabled until that observer is fixed; the other site features remain enabled.
   loadScript('site-enhancements.js?v=week9', () => {
-    loadScript('seasonal-effects.js?v=scroll-themes', () => {
-      loadScript('awards.js?v=season2-awards', () => {
-        loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
-      });
+    loadScript('awards.js?v=season2-awards', () => {
+      loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
     });
   });
 })();
