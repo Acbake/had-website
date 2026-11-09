@@ -1,0 +1,35 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#031C2A"/>
+      <stop offset="50%" stop-color="#0B2943"/>
+      <stop offset="100%" stop-color="#0F213A"/>
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0" x2="1">
+      <stop offset="0%" stop-color="#2AE3FF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0B63FF" stop-opacity="0.8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g opacity="0.9">
+    <circle cx="220" cy="160" r="190" fill="#2BD3FF" opacity="0.15"/>
+    <circle cx="1340" cy="220" r="280" fill="#18A8FF" opacity="0.12"/>
+    <circle cx="820" cy="120" r="320" fill="#53D3FF" opacity="0.08"/>
+  </g>
+  <g fill="none" stroke="url(#blueGlow)" stroke-width="10" stroke-linecap="round" opacity="0.46">
+    <path d="M100 760C320 640 340 620 470 680C560 720 620 700 700 610"/>
+    <path d="M890 680C1010 610 1100 600 1200 670C1310 740 1370 760 1460 740"/>
+    <path d="M220 180C420 250 470 320 540 360"/>
+  </g>
+  <g>
+    <text x="800" y="420" text-anchor="middle" fill="#F5FBFF" font-size="200" font-family="Impact, Arial Black, sans-serif" letter-spacing="10" font-weight="900">LIGHTNING</text>
+    <text x="800" y="560" text-anchor="middle" fill="#85D9FF" font-size="48" font-family="Arial, sans-serif" letter-spacing="12">HEAVENLY FOOTBALL LEAGUE</text>
+  </g>
+  <g fill="#73D9FF" opacity="0.9">
+    <circle cx="250" cy="690" r="14"/>
+    <circle cx="350" cy="720" r="18"/>
+    <circle cx="470" cy="710" r="12"/>
+    <circle cx="1310" cy="680" r="16"/>
+    <circle cx="1380" cy="750" r="12"/>
+  </g>
+</svg>
