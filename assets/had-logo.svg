@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 512" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" role="img" aria-labelledby="title">
   <title id="title">HAD</title>
-  <desc id="desc">White outlined HAD wordmark.</desc>
-  <rect width="2048" height="512" fill="none"/>
-  <g fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round" font-family="Arial Black, Impact, sans-serif" font-style="italic" font-weight="900" letter-spacing="-30">
-    <text x="28" y="410" font-size="390" textLength="1975" lengthAdjust="spacingAndGlyphs">HAD</text>
+  <g fill="#fff">
+    <!-- Heavy, upright block letters with no italic angle. -->
+    <path d="M35 32h112v99h152V32h112v276H299V220H147v88H35z"/>
+    <path fill-rule="evenodd" d="M454 308 551 32h158l98 276H686l-16-50H589l-17 50zm163-125h24l-12-47z"/>
+    <path fill-rule="evenodd" d="M832 32h167c109 0 166 48 166 138s-57 138-166 138H832zm110 88v100h50c45 0 62-14 62-50s-17-50-62-50z"/>
   </g>
 </svg>
