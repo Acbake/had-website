@@ -1,0 +1,10 @@
+/* Keep the Operator panel focused on changing the season only. */
+.operator-dialog .standings-editor-heading,
+.operator-dialog .standings-editor,
+.operator-dialog .staff-editor-heading,
+.operator-dialog .staff-editor-grid,
+.operator-dialog label:has(#bulletin-input),
+.operator-dialog label:has(#updates-input),
+#reset-content {
+  display: none !important;
+}

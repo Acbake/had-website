@@ -54,6 +54,16 @@
   loadScript('site-enhancements.js?v=seasonal-effects-fix', () => {
     window.setInterval = nativeSetInterval;
     window.fetch = nativeFetch;
+
+    const operatorStyles = document.createElement('link');
+    operatorStyles.rel = 'stylesheet';
+    operatorStyles.href = 'operator-season-only.css?v=1';
+    document.head.append(operatorStyles);
+    const operatorTitle = document.querySelector('#operator-dialog .dialog-head h2');
+    if (operatorTitle) operatorTitle.textContent = 'Change the season.';
+    const saveButton = document.getElementById('save-content');
+    if (saveButton) saveButton.textContent = 'Save season';
+
     loadScript('seasonal-effects.js?v=falling-banner-fix-2', () => {
       loadScript('stats-sheets.js?v=position-sheets-1', () => {
         loadScript('awards.js?v=season2-awards', () => {
