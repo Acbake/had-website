@@ -2,6 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'had-operator-content-v3';
+  const ADMIN_PASSWORD = 'heavenlybowl2025';
 
   function readContent() {
     try {
@@ -11,6 +12,20 @@
     } catch (error) {
       return null;
     }
+  }
+
+  function isAdminMode() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('admin') === ADMIN_PASSWORD;
+  }
+
+  function hidePublicOperator() {
+    const toggle = document.getElementById('operator-toggle');
+    const dialog = document.getElementById('operator-dialog');
+    if (toggle) toggle.hidden = true;
+    if (dialog) dialog.hidden = true;
+    const panel = document.getElementById('season-banner-panel');
+    if (panel) panel.hidden = true;
   }
 
   function updateVisibleSeason(value) {
@@ -85,6 +100,11 @@
   }
 
   function start() {
+    if (!isAdminMode()) {
+      hidePublicOperator();
+      return;
+    }
+
     applyOnlySeasonForm();
     bindSaveSeasonOnly();
     const openButton = document.getElementById('operator-toggle');

@@ -49,7 +49,7 @@
       loadScript('awards.js?v=season2-awards', () => {
         loadScript('week9-standings.js?v=week9', () => {
           loadScript('banner-manager.js?v=shared-season-banner', () => {
-            loadScript('operator-season-only.js?v=season-only-1');
+            loadScript('operator-season-only.js?v=admin-gate-1');
           });
         });
       });
