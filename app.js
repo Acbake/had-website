@@ -1,5 +1,4 @@
-/* Apply the latest week-9 standings before the site renders, then load the
-   existing app and award tracker as usual. */
+/* Apply the latest week-9 standings before rendering, then load the site features. */
 (() => {
   const key = 'had-operator-content-v3';
   const data = {
@@ -47,7 +46,9 @@
 
   loadScript('site-enhancements.js?v=week9', () => {
     loadScript('seasonal-effects.js?v=scroll-themes', () => {
-      loadScript('awards.js?v=season2-awards', () => loadScript('week9-standings.js?v=week9'));
+      loadScript('awards.js?v=season2-awards', () => {
+        loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+      });
     });
   });
 })();
