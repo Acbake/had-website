@@ -44,8 +44,7 @@
     document.body.append(script);
   }
 
-  // Stop the previous single-tab stats fetch and minute timer; stats-sheets.js
-  // replaces them with the four position-specific sheets.
+  // Prevent the old single-sheet request and its refresh timer during startup.
   const nativeSetInterval = window.setInterval.bind(window);
   const nativeFetch = window.fetch.bind(window);
   window.setInterval = (callback, delay, ...args) => delay === 60_000 ? 0 : nativeSetInterval(callback, delay, ...args);
@@ -53,12 +52,14 @@
     ? Promise.reject(new Error('Legacy stats sheet disabled'))
     : nativeFetch(input, ...args);
 
-  loadScript('site-enhancements.js?v=position-sheets', () => {
+  loadScript('site-enhancements.js?v=seasonal-effects-fix', () => {
     window.setInterval = nativeSetInterval;
     window.fetch = nativeFetch;
-    loadScript('stats-sheets.js?v=position-sheets-1', () => {
-      loadScript('awards.js?v=season2-awards', () => {
-        loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+    loadScript('seasonal-effects.js?v=falling-easter-eggs', () => {
+      loadScript('stats-sheets.js?v=position-sheets-1', () => {
+        loadScript('awards.js?v=season2-awards', () => {
+          loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=shared-season-banner'));
+        });
       });
     });
   });
