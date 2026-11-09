@@ -44,30 +44,13 @@
     document.body.append(script);
   }
 
-  const nativeSetInterval = window.setInterval.bind(window);
-  const nativeFetch = window.fetch.bind(window);
-  window.setInterval = (callback, delay, ...args) => delay === 60_000 ? 0 : nativeSetInterval(callback, delay, ...args);
-  window.fetch = (input, ...args) => String(input).includes('gid=1438388237')
-    ? Promise.reject(new Error('Legacy stats sheet disabled'))
-    : nativeFetch(input, ...args);
-
-  loadScript('site-enhancements.js?v=seasonal-effects-fix', () => {
-    window.setInterval = nativeSetInterval;
-    window.fetch = nativeFetch;
-
-    const operatorStyles = document.createElement('link');
-    operatorStyles.rel = 'stylesheet';
-    operatorStyles.href = 'operator-season-only.css?v=1';
-    document.head.append(operatorStyles);
-    const operatorTitle = document.querySelector('#operator-dialog .dialog-head h2');
-    if (operatorTitle) operatorTitle.textContent = 'Change the season.';
-    const saveButton = document.getElementById('save-content');
-    if (saveButton) saveButton.textContent = 'Save season';
-
-    loadScript('seasonal-effects.js?v=falling-banner-fix-2', () => {
-      loadScript('stats-sheets.js?v=position-sheets-1', () => {
-        loadScript('awards.js?v=season2-awards', () => {
-          loadScript('week9-standings.js?v=week9', () => loadScript('banner-manager.js?v=full-hero-banner-2'));
+  loadScript('site-enhancements.js?v=week9', () => {
+    loadScript('seasonal-effects.js?v=scroll-themes', () => {
+      loadScript('awards.js?v=season2-awards', () => {
+        loadScript('week9-standings.js?v=week9', () => {
+          loadScript('banner-manager.js?v=shared-season-banner', () => {
+            loadScript('operator-season-only.js?v=season-only-1');
+          });
         });
       });
     });
