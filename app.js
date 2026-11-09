@@ -1,64 +1,26 @@
 const SHEET_ID = '157AYRw6wbe7FAcyypG1iCfl2DQQ2O8K16LFyCGWH3Ho';
 const SHEET_GID = '1938901917';
 const REFRESH_MS = 60_000;
-const DEFAULT_CONTENT = {
-  season: 2,
-  bulletins: [
-    'Kansas City keeps its perfect season alive',
-    'The playoff race is heating up across both divisions',
-    'Check the live stats sheet for the latest league numbers'
-  ],
-  updates: [
-    'Official playoff bracket and matchup reveal',
-    'Expanded player stats and weekly leaders',
-    'More league announcements and event coverage'
-  ]
+let sheetHeaders = [];
+let sheetRows = [];
+let selectedPosition = 'QB';
+const POSITION_TERMS = {
+  QB: /quarter\s*back|passing|pass\s*(yd|yard|td|att|comp)|completion|interception|\bqb\b/i,
+  WR: /wide\s*receiver|receiv|catch|target|\byac\b|\bwr\b/i,
+  DB: /defensive\s*back|corner|safety|tackle|interception|pass\s*def|\bdb\b/i,
+  DE: /defensive\s*end|sack|qb\s*hit|pressure|tackle\s*for\s*loss|forced\s*fumble|\bde\b/i
 };
-const STORAGE_KEY = 'had-operator-content-v1';
-
-function loadContent() {
-  try { return { ...DEFAULT_CONTENT, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; }
-  catch { return { ...DEFAULT_CONTENT }; }
-}
-let content = loadContent();
+const POSITION_ALIASES = {
+  QB: ['QB', 'QUARTERBACK', 'QUARTER BACK'],
+  WR: ['WR', 'WIDE RECEIVER', 'WIDERECEIVER'],
+  DB: ['DB', 'DEFENSIVE BACK', 'CORNERBACK', 'SAFETY'],
+  DE: ['DE', 'DEFENSIVE END']
+};
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 
-function renderSeason() {
-  document.getElementById('hero-season').textContent = `SEASON ${content.season}`;
-  document.getElementById('bar-season').textContent = `HFL · SEASON ${content.season}`;
-  document.getElementById('season-footer').textContent = content.season;
-}
-function renderBulletins() {
-  const icons = ['✦', '↗', '▤'];
-  document.getElementById('bulletin-list').innerHTML = content.bulletins.map((item, index) => `
-    <article class="bulletin-card"><span class="bulletin-icon">${icons[index % icons.length]}</span><div><p class="eyebrow">HFL UPDATE · ${String(index + 1).padStart(2, '0')}</p><h3>${escapeHtml(item)}</h3><span class="bulletin-date">LEAGUE CENTRAL</span></div><span class="card-arrow">↗</span></article>`).join('');
-  document.getElementById('update-list').innerHTML = content.updates.map((item, index) => `
-    <article class="update-item"><span class="update-index">0${index + 1}</span><div><h3>${escapeHtml(item)}</h3><p>IN DEVELOPMENT</p></div><span class="update-status">COMING SOON</span></article>`).join('');
-}
-function openOperator() {
-  document.getElementById('season-input').value = content.season;
-  document.getElementById('bulletin-input').value = content.bulletins.join('\n');
-  document.getElementById('updates-input').value = content.updates.join('\n');
-  document.getElementById('operator-dialog').showModal();
-}
-document.getElementById('operator-toggle').addEventListener('click', openOperator);
-document.getElementById('save-content').addEventListener('click', () => {
-  content = {
-    season: Math.max(1, Number(document.getElementById('season-input').value) || DEFAULT_CONTENT.season),
-    bulletins: document.getElementById('bulletin-input').value.split('\n').map((line) => line.trim()).filter(Boolean),
-    updates: document.getElementById('updates-input').value.split('\n').map((line) => line.trim()).filter(Boolean)
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
-  renderSeason(); renderBulletins();
-  document.getElementById('operator-dialog').close();
-});
-document.getElementById('reset-content').addEventListener('click', () => {
-  content = { ...DEFAULT_CONTENT, bulletins: [...DEFAULT_CONTENT.bulletins], updates: [...DEFAULT_CONTENT.updates] };
-  localStorage.removeItem(STORAGE_KEY); renderSeason(); renderBulletins(); openOperator();
-});
-
 function parseCsv(text) {
-  const rows = []; let row = []; let cell = ''; let quoted = false;
+  const rows = [];
+  let row = [], cell = '', quoted = false;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     if (char === '"' && quoted && text[i + 1] === '"') { cell += '"'; i++; }
@@ -72,32 +34,88 @@ function parseCsv(text) {
   row.push(cell); if (row.some((value) => value.trim())) rows.push(row);
   return rows;
 }
+function normalized(value) { return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9 ]/g, ''); }
+function positionColumnIndex() {
+  return sheetHeaders.findIndex((header) => /^(pos|position|role|player position)$/i.test(String(header).trim()));
+}
+function columnRelevant(header, position) {
+  const value = String(header || '').trim();
+  if (!value) return false;
+  if (/^(team|player|name|pos|position|role|number|#|season|week|game|division|jersey)$/i.test(value)) return true;
+  const words = POSITION_TERMS[position];
+  return words.test(value);
+}
+function renderPositionStats() {
+  const host = document.getElementById('stats-table');
+  const hint = document.getElementById('position-hint');
+  const title = document.getElementById('stats-table-title');
+  if (!host) return;
+  title.textContent = `${selectedPosition} • LIVE DATA`;
+  if (!sheetHeaders.length) return;
+  const posIndex = positionColumnIndex();
+  const matchingRows = posIndex < 0 ? sheetRows : sheetRows.filter((row) => {
+    const value = normalized(row[posIndex]);
+    return POSITION_ALIASES[selectedPosition].some((alias) => normalized(alias) === value);
+  });
+  const visibleIndexes = sheetHeaders.map((header, index) => columnRelevant(header, selectedPosition) ? index : -1).filter((index) => index >= 0);
+  if (posIndex >= 0 && matchingRows.length === 0) {
+    host.innerHTML = `<div class="sheet-message"><strong>No ${selectedPosition} rows found.</strong><p>Check that the spreadsheet has a Pos or Position column with ${selectedPosition} entries.</p></div>`;
+    hint.textContent = `Showing rows tagged ${selectedPosition} in the spreadsheet.`;
+    return;
+  }
+  if (posIndex < 0) {
+    hint.textContent = 'This sheet has no Position column, so the view filters stat columns only. Add a Pos/Position column to filter players by role.';
+  } else {
+    hint.textContent = `Showing ${matchingRows.length} player row${matchingRows.length === 1 ? '' : 's'} tagged ${selectedPosition}.`;
+  }
+  const columns = visibleIndexes.length ? visibleIndexes : sheetHeaders.map((_, index) => index);
+  if (columns.length === 0) { host.innerHTML = '<div class="sheet-message">No spreadsheet columns found.</div>'; return; }
+  host.innerHTML = `<div class="table-scroll"><table><thead><tr>${columns.map((index) => `<th>${escapeHtml(sheetHeaders[index] || '—')}</th>`).join('')}</tr></thead><tbody>${matchingRows.map((row) => `<tr>${columns.map((index) => `<td>${escapeHtml(row[index] || '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
 async function loadStats() {
-  const table = document.getElementById('stats-table');
   const status = document.getElementById('sheet-status');
   const dot = document.getElementById('status-dot');
-  const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&_=${Date.now()}`;
+  const host = document.getElementById('stats-table');
+  if (!status || !dot || !host) return;
+  status.textContent = 'Connecting to Google Sheets…';
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${SHEET_GID}&_=${Date.now()}`;
   try {
-    const response = await fetch(csvUrl, { cache: 'no-store' });
+    const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) throw new Error('Sheet is not publicly viewable');
-    const rows = parseCsv(await response.text()).filter((row) => row.some((cell) => cell.trim()));
+    const rows = parseCsv(await response.text());
     if (!rows.length) throw new Error('No spreadsheet rows found');
-    const headers = rows[0];
-    const body = rows.slice(1).filter((row) => row.some((cell) => cell.trim()));
-    table.innerHTML = `<div class="table-scroll"><table><thead><tr>${headers.map((value) => `<th>${escapeHtml(value || '—')}</th>`).join('')}</tr></thead><tbody>${body.map((row) => `<tr>${headers.map((_, index) => `<td>${escapeHtml(row[index] || '—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    sheetHeaders = rows[0];
+    sheetRows = rows.slice(1).filter((row) => row.some((value) => value.trim()));
+    renderPositionStats();
     status.textContent = `Connected · updated ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
     dot.classList.add('connected');
   } catch (error) {
-    table.innerHTML = `<div class="sheet-error"><span>▤</span><h3>Stats couldn’t load yet.</h3><p>Make sure the Google Sheet is shared as “Anyone with the link” can view, then refresh. You can still open the sheet directly or view its embedded version below.</p><a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${SHEET_GID}#gid=${SHEET_GID}" target="_blank" rel="noopener">Open the spreadsheet ↗</a></div>`;
+    host.innerHTML = `<div class="sheet-message"><strong>Stats could not load.</strong><p>Set the spreadsheet access to “Anyone with the link — Viewer,” then refresh. You can still open the source sheet.</p><a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit?gid=${SHEET_GID}#gid=${SHEET_GID}" target="_blank" rel="noopener">Open Google Sheet ↗</a></div>`;
     status.textContent = 'Waiting for spreadsheet access';
     dot.classList.remove('connected');
   }
 }
-document.getElementById('refresh-stats').addEventListener('click', loadStats);
-loadStats(); setInterval(loadStats, REFRESH_MS);
-renderSeason(); renderBulletins();
+
+document.querySelectorAll('.position-tab').forEach((tab) => tab.addEventListener('click', () => {
+  selectedPosition = tab.dataset.position;
+  document.querySelectorAll('.position-tab').forEach((item) => {
+    const active = item === tab;
+    item.classList.toggle('active', active);
+    item.setAttribute('aria-selected', String(active));
+  });
+  renderPositionStats();
+}));
+document.getElementById('refresh-stats')?.addEventListener('click', loadStats);
+loadStats();
+setInterval(loadStats, REFRESH_MS);
 document.getElementById('year').textContent = new Date().getFullYear();
 const menu = document.getElementById('main-nav');
 const menuButton = document.getElementById('menu-toggle');
-menuButton.addEventListener('click', () => { const opened = menu.classList.toggle('open'); menuButton.setAttribute('aria-expanded', String(opened)); });
-menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => { menu.classList.remove('open'); menuButton.setAttribute('aria-expanded', 'false'); }));
+menuButton?.addEventListener('click', () => {
+  const opened = menu.classList.toggle('open');
+  menuButton.setAttribute('aria-expanded', String(opened));
+});
+menu?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+  menu.classList.remove('open');
+  menuButton?.setAttribute('aria-expanded', 'false');
+}));
